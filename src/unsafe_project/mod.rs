@@ -1,6 +1,6 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::quote_spanned;
-use syn::{spanned::Spanned, Generics, Item, Result, Type};
+use syn::{spanned::Spanned, Generics, Item, Result, Type, Attribute, Meta, NestedMeta};
 
 mod enums;
 mod structs;
@@ -11,11 +11,34 @@ const PIN: &str = "pin";
 pub(super) fn attribute(args: TokenStream, input: TokenStream) -> TokenStream {
     let span = span!(input);
     match syn::parse2(input) {
-        Ok(Item::Struct(item)) => structs::parse(args, item),
-        Ok(Item::Enum(item)) => enums::parse(args, item),
+        Ok(Item::Struct(item)) => {
+            ensure_not_packed(&item.attrs).and_then(|_| structs::parse(args, item))
+        }
+        Ok(Item::Enum(item)) => {
+            ensure_not_packed(&item.attrs).and_then(|_| enums::parse(args, item))
+        }
         _ => Err(error!(span, "may only be used on structs or enums")),
     }
     .unwrap_or_else(|e| e.to_compile_error())
+}
+
+fn ensure_not_packed(attrs: &[Attribute]) -> Result<()> {
+    for attr in attrs {
+        if let Ok(meta) = attr.parse_meta() {
+            if let Meta::List(l) = meta {
+                if l.ident == "repr" {
+                    for repr in l.nested.iter() {
+                        if let NestedMeta::Meta(Meta::Word(w)) = repr {
+                            if w == "packed" {
+                                return Err(error!(w, "unsafe_project may not be used on #[repr(packed)] types"))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return Ok(())
 }
 
 /// Makes the generics of projected type from the reference of the original generics.
