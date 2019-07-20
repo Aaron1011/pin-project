@@ -4,8 +4,6 @@
 #![warn(rust_2018_idioms)]
 #![allow(dead_code)]
 
-#![feature(proc_macro_hygiene)]
-
 use core::pin::Pin;
 use pin_project::{unsafe_project, pin_project};
 
@@ -152,22 +150,22 @@ fn trait_bounds_on_type_generics() {
     }
 }
 
-#[test]
-fn safe_project() {
 
-    pin_project! {
-        #[unsafe_project]
-        pub struct Foo<'a> {
-            was_dropped: &'a mut bool,
-            #[pin] field_2: u8
-        }
-
-        #[pinned_drop]
-        fn do_drop(foo: Pin<&mut Foo>) {
-            **foo.project().was_dropped = true;
-        }
+pin_project! {
+    #[unsafe_project]
+    pub struct Foo<'a> {
+        was_dropped: &'a mut bool,
+        #[pin] field_2: u8
     }
 
+    #[pinned_drop]
+    fn do_drop(foo: Pin<&mut Foo>) {
+        **foo.project().was_dropped = true;
+    }
+}
+
+#[test]
+fn safe_project() {
     let mut was_dropped = false;
     drop(Foo { was_dropped: &mut was_dropped, field_2: 42 });
     assert!(was_dropped);
