@@ -7,7 +7,7 @@ use std::pin::Pin;
 
 // The same implementation.
 
-#[pin_projectable(Unpin)] //~ ERROR E0119
+#[pin_projectable] //~ ERROR E0119
 struct Foo<T, U> {
     #[pin]
     future: T,
@@ -27,7 +27,7 @@ impl<T, U> Unpin for Foo<T, U> where T: Unpin {} // Conditional Unpin impl
 
 // The implementation that under different conditions.
 
-#[pin_projectable(Unpin)] //~ ERROR E0119
+#[pin_projectable] //~ ERROR E0119
 struct Bar<T, U> {
     #[pin]
     future: T,
@@ -45,7 +45,7 @@ impl<T, U> Bar<T, U> {
 // conflicting implementations
 impl<T, U> Unpin for Bar<T, U> {} // Non-conditional Unpin impl
 
-#[pin_projectable(Unpin)] //~ ERROR E0119
+#[pin_projectable] //~ ERROR E0119
 struct Baz<T, U> {
     #[pin]
     future: T,
