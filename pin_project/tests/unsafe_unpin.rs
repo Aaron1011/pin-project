@@ -14,9 +14,5 @@ fn unsafe_unpin() {
         field_1: u8,
         #[pin] field_2: Option<T>
     }
-
-    fn blah<T>() where Blah<T>: Unpin {}
-
-    unsafe impl<T> UnsafeUnpin for Blah<T> where T: Unpin + core::fmt::Display {}
 }
 

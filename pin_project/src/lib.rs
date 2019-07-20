@@ -144,3 +144,7 @@
 pub use pin_project_internal::*;
 
 pub unsafe trait UnsafeUnpin {}
+
+pub struct Wrapper<T>(T);
+
+unsafe impl<T> UnsafeUnpin for Wrapper<T> where T: UnsafeUnpin {}

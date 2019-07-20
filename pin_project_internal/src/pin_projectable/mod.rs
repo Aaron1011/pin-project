@@ -45,6 +45,7 @@ fn handle_type(args: TokenStream, item: Item, pinned_drop: Option<ItemFn>) -> Re
 pub(super) fn pin_project(input: TokenStream) -> Result<TokenStream> {
     let span = span!(input);
     let mut items: Vec<Item> = syn::parse2::<PinProject>(input)?.items;
+
     let mut found_type = None;
     let mut found_pinned_drop = None;
 
@@ -230,7 +231,7 @@ impl ImplUnpin {
             }
         } else {
             println!("Quoting: {:?}", impl_generics);
-            where_clause.predicates.push(syn::parse_quote!(#ident #ty_generics: ::pin_project::UnsafeUnpin));
+            where_clause.predicates.push(syn::parse_quote!(::pin_project::Wrapper<#ident #ty_generics>: ::pin_project::UnsafeUnpin));
 
             let workaround_ident = Ident::new(&("__rust_workaround_".to_string() + &ident.to_string()), Span::call_site());
 
