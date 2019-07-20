@@ -64,7 +64,6 @@ pub(super) fn pin_project(input: TokenStream) -> Result<TokenStream> {
                             _ => return Err(error!(span!(attr), "invalid arguments"))
                         };
 
-                        println!("Args: {:?}", args);
                         found_type = Some((item.clone(), args));
                     } else {
                         return Err(error!(span, "type delcared in pin_project! must have pin_projectable attribute"))
@@ -224,15 +223,12 @@ impl ImplUnpin {
     fn build(self, ident: &Ident) -> TokenStream {
         let (impl_generics, ty_generics, where_clause) = self.generics.split_for_impl();
         let mut where_clause = where_clause.unwrap().clone(); // Created in 'new'
-        println!("where_clause: {:?}", where_clause);
 
         let res = if self.auto {
             quote_spanned! { self.span =>
                 impl #impl_generics ::core::marker::Unpin for #ident #ty_generics #where_clause {}
             }
         } else {
-            println!("Quoting: {:?}", impl_generics);
-
             // This is fairly subtle.
             // Normally, you would use `env!("CARGO_PKG_NAME")` to get the name of the package,
             // since it's set at compile time.
@@ -246,9 +242,6 @@ impl ImplUnpin {
                 PIN_PROJECT_CRATE.as_str()
             }, Span::call_site());
 
-            println!("Crate nane: {:?}", pin_project_crate);
-
-
             where_clause.predicates.push(syn::parse_quote!(::#pin_project_crate::Wrapper<#ident #ty_generics>: ::#pin_project_crate::UnsafeUnpin));
 
             quote_spanned! { self.span =>
@@ -257,7 +250,6 @@ impl ImplUnpin {
 
 
         };
-        println!("Res: {}", res);
         res
     }
 }
