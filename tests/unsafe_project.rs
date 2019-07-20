@@ -164,9 +164,6 @@ fn safe_project() {
 
         #[pinned_drop]
         fn do_drop(foo: Pin<&mut Foo>) {
-            extern crate std;
-            use std::eprintln;
-            eprintln!("Drop called!");
         }
     }
 
@@ -175,4 +172,15 @@ fn safe_project() {
         field_2: true
     };
 
+}
+
+#[test]
+fn unsafe_unpin() {
+    #[unsafe_project(unsafe_Unpin)]
+    pub struct Blah<T> {
+        field_1: u8,
+        #[pin] field_2: Option<T>
+    }
+
+    impl<T> Unpin for Blah<T> where T: Unpin + core::fmt::Display {}
 }

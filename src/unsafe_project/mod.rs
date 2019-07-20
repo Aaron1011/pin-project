@@ -204,8 +204,8 @@ impl ImplUnpin {
             return Ok(Self::default())
         }
         match &*args.to_string() {
-            "unsafe_Unpin" => Ok(Self(Some((generics.clone(), args.span())))),
-            "" => Ok(Self::default()),
+            "" => Ok(Self(Some((generics.clone(), args.span())))),
+            "unsafe_Unpin" => Ok(Self::default()),
             _ => Err(error!(args, "an invalid argument was passed")),
         }
     }
