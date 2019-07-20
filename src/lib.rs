@@ -140,6 +140,7 @@
 #![warn(single_use_lifetimes)]
 #![warn(clippy::all, clippy::pedantic)]
 #![warn(clippy::nursery)]
+#![feature(proc_macro_hygiene)]
 
 extern crate proc_macro;
 
@@ -323,7 +324,7 @@ use proc_macro::TokenStream;
 /// [`project`]: ./attr.project.html
 #[proc_macro_attribute]
 pub fn unsafe_project(args: TokenStream, input: TokenStream) -> TokenStream {
-    TokenStream::from(unsafe_project::attribute(args.into(), input.into()))
+    TokenStream::from(unsafe_project::attribute(args.into(), input.into()).unwrap_or_else(|e| e.to_compile_error()))
 }
 
 /// An attribute to support pattern matching.
@@ -424,4 +425,10 @@ pub fn unsafe_project(args: TokenStream, input: TokenStream) -> TokenStream {
 pub fn project(args: TokenStream, input: TokenStream) -> TokenStream {
     assert!(args.is_empty());
     TokenStream::from(project::attribute(input.into()))
+}
+
+
+#[proc_macro]
+pub fn pin_project(input: TokenStream) -> TokenStream {
+    TokenStream::from(unsafe_project::pin_project(input.into()).unwrap_or_else(|e| e.to_compile_error()))
 }

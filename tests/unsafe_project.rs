@@ -4,8 +4,10 @@
 #![warn(rust_2018_idioms)]
 #![allow(dead_code)]
 
+#![feature(proc_macro_hygiene)]
+
 use core::pin::Pin;
-use pin_project::unsafe_project;
+use pin_project::{unsafe_project, pin_project};
 
 #[test]
 fn test_unsafe_project() {
@@ -148,4 +150,29 @@ fn trait_bounds_on_type_generics() {
     enum Baz<'a, T: ?Sized> {
         Variant(&'a mut T),
     }
+}
+
+#[test]
+fn safe_project() {
+
+    pin_project! {
+        #[unsafe_project(Unpin)]
+        pub struct Foo {
+            field_1: u8,
+            #[pin] field_2: bool
+        }
+
+        #[pinned_drop]
+        fn do_drop(foo: Pin<&mut Foo>) {
+            extern crate std;
+            use std::eprintln;
+            eprintln!("Drop called!");
+        }
+    }
+
+    Foo {
+        field_1: 5,
+        field_2: true
+    };
+
 }
