@@ -159,7 +159,7 @@ pin_project! {
     }
 
     #[pinned_drop]
-    fn do_drop(foo: Pin<&mut Foo>) {
+    fn do_drop(foo: Pin<&mut Foo<'_>>) {
         **foo.project().was_dropped = true;
     }
 }

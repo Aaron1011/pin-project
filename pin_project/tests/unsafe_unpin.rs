@@ -4,8 +4,8 @@
 #![warn(rust_2018_idioms)]
 #![allow(dead_code)]
 
-use core::pin::Pin;
-use pin_project::{pin_projectable, UnsafeUnpin};
+
+use pin_project::{pin_projectable};
 
 #[test]
 fn unsafe_unpin() {

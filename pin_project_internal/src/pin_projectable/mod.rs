@@ -1,8 +1,8 @@
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::{quote_spanned, ToTokens, quote};
-use syn::{spanned::Spanned, Generics, Item, Result, Type, Attribute, Meta, NestedMeta, ItemFn, ItemStruct, ItemEnum, WhereClause};
+use quote::{quote_spanned, ToTokens};
+use syn::{spanned::Spanned, Generics, Item, Result, Type, Attribute, Meta, NestedMeta, ItemFn, ItemStruct, ItemEnum};
 use syn::parse::{Parse, ParseStream};
-use syn::punctuated::Punctuated;
+
 
 use crate::utils::VecExt;
 use crate::PIN_PROJECT_CRATE;
@@ -20,7 +20,7 @@ struct PinProject {
 }
 
 impl Parse for PinProject {
-    fn parse(input: ParseStream) -> Result<Self> {
+    fn parse(input: ParseStream<'_>) -> Result<Self> {
         let mut items = vec![];
         while !input.is_empty() {
             items.push(input.parse()?);
@@ -45,7 +45,7 @@ fn handle_type(args: TokenStream, item: Item, pinned_drop: Option<ItemFn>) -> Re
 
 pub(super) fn pin_project(input: TokenStream) -> Result<TokenStream> {
     let span = span!(input);
-    let mut items: Vec<Item> = syn::parse2::<PinProject>(input)?.items;
+    let items: Vec<Item> = syn::parse2::<PinProject>(input)?.items;
 
     let mut found_type = None;
     let mut found_pinned_drop = None;
