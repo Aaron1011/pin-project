@@ -1,7 +1,8 @@
 use proc_macro2::{Ident, Span, TokenStream};
 use quote::{quote_spanned, ToTokens};
-use syn::{spanned::Spanned, Generics, Item, Result, Type, Attribute, Meta, NestedMeta, ItemFn, ItemStruct, ItemEnum};
+use syn::{spanned::Spanned, Generics, Item, Result, Type, Attribute, Meta, NestedMeta, ItemFn, ItemStruct, ItemEnum, WhereClause};
 use syn::parse::{Parse, ParseStream};
+use syn::punctuated::Punctuated;
 
 use crate::utils::VecExt;
 
@@ -147,6 +148,7 @@ impl ImplDrop {
 
     fn build(self, ident: &Ident)-> TokenStream {
         let (impl_generics, ty_generics, where_clause) = self.generics.split_for_impl();
+
         match self.pinned_drop {
             Some(fn_) => {
                 let fn_name = fn_.ident.clone();
@@ -187,32 +189,29 @@ impl ImplDrop {
 // =================================================================================================
 // conditional Unpin implementation
 
-#[derive(Default)]
-struct ImplUnpin(
-    Option<(
-        // generics
-        Generics,
-        // span
-        Span,
-    )>,
-);
+struct ImplUnpin {
+    generics: Generics,
+    span: Span,
+    auto: bool
+}
 
 impl ImplUnpin {
     /// Parses attribute arguments.
     fn new(args: TokenStream, generics: &Generics) -> Result<Self> {
-        if args.is_empty() {
-            return Ok(Self::default())
-        }
+        let mut generics = generics.clone();
+        generics.make_where_clause();
+
         match &*args.to_string() {
-            "" => Ok(Self(Some((generics.clone(), args.span())))),
-            "unsafe_Unpin" => Ok(Self::default()),
+            "" => Ok(Self { generics: generics.clone(), span: args.span(), auto: true }),
+            "unsafe_Unpin" => Ok(Self { generics: generics.clone(), span: args.span(), auto: false }),
             _ => Err(error!(args, "an invalid argument was passed")),
         }
     }
 
     fn push(&mut self, ty: &Type) {
-        if let Some((generics, _)) = &mut self.0 {
-            generics
+        // We only add bounds for automatically generated impls
+        if self.auto {
+            self.generics
                 .make_where_clause()
                 .predicates
                 .push(syn::parse_quote!(#ty: ::core::marker::Unpin));
@@ -221,13 +220,28 @@ impl ImplUnpin {
 
     /// Creates `Unpin` implementation.
     fn build(self, ident: &Ident) -> TokenStream {
-        self.0
-            .map(|(generics, span)| {
-                let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-                quote_spanned! { span =>
-                    impl #impl_generics ::core::marker::Unpin for #ident #ty_generics #where_clause {}
-                }
-            })
-            .unwrap_or_default()
+        let (impl_generics, ty_generics, where_clause) = self.generics.split_for_impl();
+        let mut where_clause = where_clause.unwrap().clone(); // Created in 'new'
+        println!("where_clause: {:?}", where_clause);
+
+        let res = if self.auto {
+            quote_spanned! { self.span =>
+                impl #impl_generics ::core::marker::Unpin for #ident #ty_generics #where_clause {}
+            }
+        } else {
+            println!("Quoting: {:?}", impl_generics);
+            where_clause.predicates.push(syn::parse_quote!(#ident #ty_generics: ::pin_project::UnsafeUnpin));
+
+            let workaround_ident = Ident::new(&("__rust_workaround_".to_string() + &ident.to_string()), Span::call_site());
+
+            quote_spanned! { self.span =>
+                impl #impl_generics ::core::marker::Unpin for #ident #ty_generics #where_clause {}
+                fn #workaround_ident #impl_generics () #where_clause {}
+            }
+
+
+        };
+        println!("Res: {}", res);
+        res
     }
 }

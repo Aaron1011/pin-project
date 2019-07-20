@@ -5,7 +5,7 @@
 #![allow(dead_code)]
 
 use core::pin::Pin;
-use pin_project::{pin_projectable, pin_project};
+use pin_project_internal::{pin_projectable, pin_project};
 
 #[test]
 fn test_pin_projectable() {
@@ -169,15 +169,4 @@ fn safe_project() {
     let mut was_dropped = false;
     drop(Foo { was_dropped: &mut was_dropped, field_2: 42 });
     assert!(was_dropped);
-}
-
-#[test]
-fn unsafe_unpin() {
-    #[pin_projectable(unsafe_Unpin)]
-    pub struct Blah<T> {
-        field_1: u8,
-        #[pin] field_2: Option<T>
-    }
-
-    impl<T> Unpin for Blah<T> where T: Unpin + core::fmt::Display {}
 }
