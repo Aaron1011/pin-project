@@ -2,13 +2,13 @@
 //!
 //! ## Examples
 //!
-//! [`unsafe_project`] attribute creates a projection struct covering all the fields.
+//! [`pin_projectable`] attribute creates a projection struct covering all the fields.
 //!
 //! ```rust
-//! use pin_project::unsafe_project;
+//! use pin_project::pin_projectable;
 //! use std::pin::Pin;
 //!
-//! #[unsafe_project] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
+//! #[pin_projectable] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
 //! struct Foo<T, U> {
 //!     #[pin]
 //!     future: T,
@@ -59,17 +59,17 @@
 //!
 //! </details>
 //!
-//! [`unsafe_project`] also supports enums, but to use it ergonomically, you need
+//! [`pin_projectable`] also supports enums, but to use it ergonomically, you need
 //! to use the [`project`] attribute.
 //!
 //! ```rust
 //! # #[cfg(feature = "project_attr")]
-//! use pin_project::{project, unsafe_project};
+//! use pin_project::{project, pin_projectable};
 //! # #[cfg(feature = "project_attr")]
 //! use std::pin::Pin;
 //!
 //! # #[cfg(feature = "project_attr")]
-//! #[unsafe_project] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
+//! #[pin_projectable] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
 //! enum Foo<T, U> {
 //!     Future(#[pin] T),
 //!     Done(U),
@@ -126,9 +126,9 @@
 //!
 //! </details>
 //!
-//! See [`unsafe_project`] and [`project`] for more details.
+//! See [`pin_projectable`] and [`project`] for more details.
 //!
-//! [`unsafe_project`]: ./attr.unsafe_project.html
+//! [`pin_projectable`]: ./attr.pin_projectable.html
 //! [`project`]: ./attr.project.html
 //!
 
@@ -149,7 +149,7 @@ mod utils;
 
 #[cfg(feature = "project_attr")]
 mod project;
-mod unsafe_project;
+mod pin_projectable;
 
 use proc_macro::TokenStream;
 
@@ -169,7 +169,7 @@ use proc_macro::TokenStream;
 ///   move the value of the field.
 /// - If the struct wants to implement [`Unpin`], it has to do so conditionally:
 ///   The struct can only implement [`Unpin`] if the field's type is [`Unpin`].
-///   If you use `#[unsafe_project]`, you do not need to ensure this
+///   If you use `#[pin_projectable]`, you do not need to ensure this
 ///   because an appropriate conditional [`Unpin`] implementation will be
 ///   generated.
 /// - The struct must not be `#[repr(packed)]`.
@@ -179,14 +179,14 @@ use proc_macro::TokenStream;
 ///
 /// ## Examples
 ///
-/// Using `#[unsafe_project]` will automatically create the appropriate
+/// Using `#[pin_projectable]` will automatically create the appropriate
 /// conditional [`Unpin`] implementation:
 ///
 /// ```rust
-/// use pin_project::unsafe_project;
+/// use pin_project::pin_projectable;
 /// use std::pin::Pin;
 ///
-/// #[unsafe_project]
+/// #[pin_projectable]
 /// struct Foo<T, U> {
 ///     #[pin]
 ///     future: T,
@@ -208,10 +208,10 @@ use proc_macro::TokenStream;
 /// If you want to implement [`Unpin`] manually:
 ///
 /// ```rust
-/// use pin_project::unsafe_project;
+/// use pin_project::pin_projectable;
 /// use std::pin::Pin;
 ///
-/// #[unsafe_project]
+/// #[pin_projectable]
 /// struct Foo<T, U> {
 ///     #[pin]
 ///     future: T,
@@ -239,9 +239,9 @@ use proc_macro::TokenStream;
 /// ### Structs (structs with named fields):
 ///
 /// ```rust
-/// # use pin_project::unsafe_project;
+/// # use pin_project::pin_projectable;
 /// # use std::pin::Pin;
-/// #[unsafe_project]
+/// #[pin_projectable]
 /// struct Foo<T, U> {
 ///     #[pin]
 ///     future: T,
@@ -260,9 +260,9 @@ use proc_macro::TokenStream;
 /// ### Tuple structs (structs with unnamed fields):
 ///
 /// ```rust
-/// # use pin_project::unsafe_project;
+/// # use pin_project::pin_projectable;
 /// # use std::pin::Pin;
-/// #[unsafe_project]
+/// #[pin_projectable]
 /// struct Foo<T, U>(#[pin] T, U);
 ///
 /// impl<T, U> Foo<T, U> {
@@ -279,17 +279,17 @@ use proc_macro::TokenStream;
 ///
 /// ### Enums
 ///
-/// `unsafe_project` also supports enums, but to use it ergonomically, you need
+/// `pin_projectable` also supports enums, but to use it ergonomically, you need
 /// to use the [`project`] attribute.
 ///
 /// ```rust
 /// # #[cfg(feature = "project_attr")]
-/// use pin_project::{project, unsafe_project};
+/// use pin_project::{project, pin_projectable};
 /// # #[cfg(feature = "project_attr")]
 /// # use std::pin::Pin;
 ///
 /// # #[cfg(feature = "project_attr")]
-/// #[unsafe_project]
+/// #[pin_projectable]
 /// enum Foo<A, B, C> {
 ///     Tuple(#[pin] A, B),
 ///     Struct { field: C },
@@ -323,8 +323,8 @@ use proc_macro::TokenStream;
 /// [`drop`]: Drop::drop
 /// [`project`]: ./attr.project.html
 #[proc_macro_attribute]
-pub fn unsafe_project(args: TokenStream, input: TokenStream) -> TokenStream {
-    TokenStream::from(unsafe_project::attribute(args.into(), input.into()).unwrap_or_else(|e| e.to_compile_error()))
+pub fn pin_projectable(args: TokenStream, input: TokenStream) -> TokenStream {
+    TokenStream::from(pin_projectable::attribute(args.into(), input.into()).unwrap_or_else(|e| e.to_compile_error()))
 }
 
 /// An attribute to support pattern matching.
@@ -337,10 +337,10 @@ pub fn unsafe_project(args: TokenStream, input: TokenStream) -> TokenStream {
 /// ### `let` bindings
 ///
 /// ```rust
-/// use pin_project::{project, unsafe_project};
+/// use pin_project::{project, pin_projectable};
 /// # use std::pin::Pin;
 ///
-/// #[unsafe_project]
+/// #[pin_projectable]
 /// struct Foo<T, U> {
 ///     #[pin]
 ///     future: T,
@@ -362,10 +362,10 @@ pub fn unsafe_project(args: TokenStream, input: TokenStream) -> TokenStream {
 /// ### `match` expressions
 ///
 /// ```rust
-/// use pin_project::{project, unsafe_project};
+/// use pin_project::{project, pin_projectable};
 /// # use std::pin::Pin;
 ///
-/// #[unsafe_project]
+/// #[pin_projectable]
 /// enum Foo<A, B, C> {
 ///     Tuple(#[pin] A, B),
 ///     Struct { field: C },
@@ -397,10 +397,10 @@ pub fn unsafe_project(args: TokenStream, input: TokenStream) -> TokenStream {
 /// different structures in the after second times will not generate wrong code.
 ///
 /// ```rust
-/// use pin_project::{project, unsafe_project};
+/// use pin_project::{project, pin_projectable};
 /// # use std::pin::Pin;
 ///
-/// #[unsafe_project]
+/// #[pin_projectable]
 /// enum Foo<A, B, C> {
 ///     Tuple(#[pin] A, B),
 ///     Struct { field: C },
@@ -430,5 +430,5 @@ pub fn project(args: TokenStream, input: TokenStream) -> TokenStream {
 
 #[proc_macro]
 pub fn pin_project(input: TokenStream) -> TokenStream {
-    TokenStream::from(unsafe_project::pin_project(input.into()).unwrap_or_else(|e| e.to_compile_error()))
+    TokenStream::from(pin_projectable::pin_project(input.into()).unwrap_or_else(|e| e.to_compile_error()))
 }

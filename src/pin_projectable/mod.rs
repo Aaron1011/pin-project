@@ -51,8 +51,8 @@ pub(super) fn pin_project(input: TokenStream) -> Result<TokenStream> {
         match &mut item {
             Item::Struct(ItemStruct { attrs, .. }) | Item::Enum(ItemEnum { attrs, .. }) => {
                 if found_type.is_none() {
-                    if let Some(pos) = attrs.iter().position(|a| a.path.is_ident("unsafe_project")) {
-                        // Remove the 'unsafe_project' attribute, to prevent it from
+                    if let Some(pos) = attrs.iter().position(|a| a.path.is_ident("pin_projectable")) {
+                        // Remove the 'pin_projectable' attribute, to prevent it from
                         // being parsed again
                         let attr = attrs.remove(pos);
                         let args = match attr.parse_meta()? {
@@ -64,7 +64,7 @@ pub(super) fn pin_project(input: TokenStream) -> Result<TokenStream> {
                         println!("Args: {:?}", args);
                         found_type = Some((item.clone(), args));
                     } else {
-                        return Err(error!(span, "type delcared in pin_project! must have unsafe_project attribute"))
+                        return Err(error!(span, "type delcared in pin_project! must have pin_projectable attribute"))
                     }
                 } else {
                     return Err(error!(span, "cannot declare multiple types within pinned module"))
@@ -91,7 +91,7 @@ pub(super) fn pin_project(input: TokenStream) -> Result<TokenStream> {
 
     let (type_, args) = match found_type {
         Some(t) => t,
-        None => return Err(error!(span, "No #[unsafe_project] type found!"))
+        None => return Err(error!(span, "No #[pin_projectable] type found!"))
     };
 
     let res = handle_type(args, type_, found_pinned_drop.clone());
@@ -115,7 +115,7 @@ fn ensure_not_packed(attrs: &[Attribute]) -> Result<()> {
                     for repr in l.nested.iter() {
                         if let NestedMeta::Meta(Meta::Word(w)) = repr {
                             if w == "packed" {
-                                return Err(error!(w, "unsafe_project may not be used on #[repr(packed)] types"))
+                                return Err(error!(w, "pin_projectable may not be used on #[repr(packed)] types"))
                             }
                         }
                     }

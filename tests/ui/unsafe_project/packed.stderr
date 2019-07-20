@@ -1,10 +1,10 @@
-error: unsafe_project may not be used on #[repr(packed)] types
+error: pin_projectable may not be used on #[repr(packed)] types
  --> $DIR/packed.rs:7:8
   |
 7 | #[repr(packed, C)] //~ ERROR may not be used on #[repr(packed)] type
   |        ^^^^^^
 
-error: unsafe_project may not be used on #[repr(packed)] types
+error: pin_projectable may not be used on #[repr(packed)] types
   --> $DIR/packed.rs:14:8
    |
 14 | #[repr(packed, C)] //~ ERROR may not be used on #[repr(packed)] type
