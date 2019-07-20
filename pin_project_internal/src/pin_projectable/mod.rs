@@ -1,10 +1,11 @@
 use proc_macro2::{Ident, Span, TokenStream};
-use quote::{quote_spanned, ToTokens};
+use quote::{quote_spanned, ToTokens, quote};
 use syn::{spanned::Spanned, Generics, Item, Result, Type, Attribute, Meta, NestedMeta, ItemFn, ItemStruct, ItemEnum, WhereClause};
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 
 use crate::utils::VecExt;
+use crate::PIN_PROJECT_CRATE;
 
 mod enums;
 mod structs;
@@ -231,13 +232,27 @@ impl ImplUnpin {
             }
         } else {
             println!("Quoting: {:?}", impl_generics);
-            where_clause.predicates.push(syn::parse_quote!(::pin_project::Wrapper<#ident #ty_generics>: ::pin_project::UnsafeUnpin));
 
-            let workaround_ident = Ident::new(&("__rust_workaround_".to_string() + &ident.to_string()), Span::call_site());
+            // This is fairly subtle.
+            // Normally, you would use `env!("CARGO_PKG_NAME")` to get the name of the package,
+            // since it's set at compile time.
+            // However, we're in a proc macro, which runs while *another* crate is being compiled.
+            // By retreiving the runtime value of `CARGO_PKG_NAME`, we can figure out the name
+            // of the crate that's calling us.
+            let cur_crate = std::env::var("CARGO_PKG_NAME").expect("Could not find CARGO_PKG_NAME environemnt variable");
+            let pin_project_crate = Ident::new(if cur_crate == "pin-project" {
+                "pin_project"
+            } else {
+                PIN_PROJECT_CRATE.as_str()
+            }, Span::call_site());
+
+            println!("Crate nane: {:?}", pin_project_crate);
+
+
+            where_clause.predicates.push(syn::parse_quote!(::#pin_project_crate::Wrapper<#ident #ty_generics>: ::#pin_project_crate::UnsafeUnpin));
 
             quote_spanned! { self.span =>
                 impl #impl_generics ::core::marker::Unpin for #ident #ty_generics #where_clause {}
-                fn #workaround_ident #impl_generics () #where_clause {}
             }
 
 
