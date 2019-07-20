@@ -57,6 +57,7 @@ pub(super) fn pin_project(input: TokenStream) -> Result<TokenStream> {
                         let attr = attrs.remove(pos);
                         let args = match attr.parse_meta()? {
                             Meta::List(l) => l.nested.into_token_stream(),
+                            Meta::Word(_) => TokenStream::new(),
                             _ => return Err(error!(span!(attr), "invalid arguments"))
                         };
 
@@ -88,10 +89,12 @@ pub(super) fn pin_project(input: TokenStream) -> Result<TokenStream> {
         return Err(error!(span, "pin_project must declare a struct or enum"))
     }
 
-    let (type_, args) = found_type.unwrap();
+    let (type_, args) = match found_type {
+        Some(t) => t,
+        None => return Err(error!(span, "No #[unsafe_project] type found!"))
+    };
+
     let res = handle_type(args, type_, found_pinned_drop.clone());
-    let tok_res: Option<TokenStream> = res.clone().ok().into();
-    println!("Res: {}", tok_res.unwrap());
     res
 }
 
@@ -197,9 +200,12 @@ struct ImplUnpin(
 impl ImplUnpin {
     /// Parses attribute arguments.
     fn new(args: TokenStream, generics: &Generics) -> Result<Self> {
+        if args.is_empty() {
+            return Ok(Self::default())
+        }
         match &*args.to_string() {
+            "unsafe_Unpin" => Ok(Self(Some((generics.clone(), args.span())))),
             "" => Ok(Self::default()),
-            "Unpin" => Ok(Self(Some((generics.clone(), args.span())))),
             _ => Err(error!(args, "an invalid argument was passed")),
         }
     }

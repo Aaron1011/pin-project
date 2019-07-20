@@ -13,7 +13,7 @@ use pin_project::{unsafe_project, pin_project};
 fn test_unsafe_project() {
     // struct
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     struct Foo<T, U> {
         #[pin]
         field1: T,
@@ -32,7 +32,7 @@ fn test_unsafe_project() {
 
     // tuple struct
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     struct Bar<T, U>(#[pin] T, U);
 
     let mut bar = Bar(1, 2);
@@ -47,7 +47,7 @@ fn test_unsafe_project() {
 
     // enum
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     enum Baz<A, B, C, D> {
         Variant1(#[pin] A, B),
         Variant2 {
@@ -109,7 +109,7 @@ fn test_unsafe_project() {
 fn where_clause_and_associated_type_fields() {
     // struct
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     struct Foo<I>
     where
         I: Iterator,
@@ -121,7 +121,7 @@ fn where_clause_and_associated_type_fields() {
 
     // enum
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     enum Baz<I>
     where
         I: Iterator,
@@ -135,18 +135,18 @@ fn where_clause_and_associated_type_fields() {
 fn trait_bounds_on_type_generics() {
     // struct
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     pub struct Foo<'a, T: ?Sized> {
         field: &'a mut T,
     }
 
     // tuple struct
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     pub struct Bar<'a, T: ?Sized>(&'a mut T);
 
     // enum
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     enum Baz<'a, T: ?Sized> {
         Variant(&'a mut T),
     }
@@ -156,7 +156,7 @@ fn trait_bounds_on_type_generics() {
 fn safe_project() {
 
     pin_project! {
-        #[unsafe_project(Unpin)]
+        #[unsafe_project]
         pub struct Foo {
             field_1: u8,
             #[pin] field_2: bool

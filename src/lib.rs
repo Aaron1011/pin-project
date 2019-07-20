@@ -8,7 +8,7 @@
 //! use pin_project::unsafe_project;
 //! use std::pin::Pin;
 //!
-//! #[unsafe_project(Unpin)] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
+//! #[unsafe_project] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
 //! struct Foo<T, U> {
 //!     #[pin]
 //!     future: T,
@@ -69,7 +69,7 @@
 //! use std::pin::Pin;
 //!
 //! # #[cfg(feature = "project_attr")]
-//! #[unsafe_project(Unpin)] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
+//! #[unsafe_project] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
 //! enum Foo<T, U> {
 //!     Future(#[pin] T),
 //!     Done(U),
@@ -169,7 +169,7 @@ use proc_macro::TokenStream;
 ///   move the value of the field.
 /// - If the struct wants to implement [`Unpin`], it has to do so conditionally:
 ///   The struct can only implement [`Unpin`] if the field's type is [`Unpin`].
-///   If you use `#[unsafe_project(Unpin)]`, you do not need to ensure this
+///   If you use `#[unsafe_project]`, you do not need to ensure this
 ///   because an appropriate conditional [`Unpin`] implementation will be
 ///   generated.
 /// - The struct must not be `#[repr(packed)]`.
@@ -179,14 +179,14 @@ use proc_macro::TokenStream;
 ///
 /// ## Examples
 ///
-/// Using `#[unsafe_project(Unpin)]` will automatically create the appropriate
+/// Using `#[unsafe_project]` will automatically create the appropriate
 /// conditional [`Unpin`] implementation:
 ///
 /// ```rust
 /// use pin_project::unsafe_project;
 /// use std::pin::Pin;
 ///
-/// #[unsafe_project(Unpin)]
+/// #[unsafe_project]
 /// struct Foo<T, U> {
 ///     #[pin]
 ///     future: T,
@@ -241,7 +241,7 @@ use proc_macro::TokenStream;
 /// ```rust
 /// # use pin_project::unsafe_project;
 /// # use std::pin::Pin;
-/// #[unsafe_project(Unpin)]
+/// #[unsafe_project]
 /// struct Foo<T, U> {
 ///     #[pin]
 ///     future: T,
@@ -262,7 +262,7 @@ use proc_macro::TokenStream;
 /// ```rust
 /// # use pin_project::unsafe_project;
 /// # use std::pin::Pin;
-/// #[unsafe_project(Unpin)]
+/// #[unsafe_project]
 /// struct Foo<T, U>(#[pin] T, U);
 ///
 /// impl<T, U> Foo<T, U> {
@@ -289,7 +289,7 @@ use proc_macro::TokenStream;
 /// # use std::pin::Pin;
 ///
 /// # #[cfg(feature = "project_attr")]
-/// #[unsafe_project(Unpin)]
+/// #[unsafe_project]
 /// enum Foo<A, B, C> {
 ///     Tuple(#[pin] A, B),
 ///     Struct { field: C },
@@ -340,7 +340,7 @@ pub fn unsafe_project(args: TokenStream, input: TokenStream) -> TokenStream {
 /// use pin_project::{project, unsafe_project};
 /// # use std::pin::Pin;
 ///
-/// #[unsafe_project(Unpin)]
+/// #[unsafe_project]
 /// struct Foo<T, U> {
 ///     #[pin]
 ///     future: T,
@@ -365,7 +365,7 @@ pub fn unsafe_project(args: TokenStream, input: TokenStream) -> TokenStream {
 /// use pin_project::{project, unsafe_project};
 /// # use std::pin::Pin;
 ///
-/// #[unsafe_project(Unpin)]
+/// #[unsafe_project]
 /// enum Foo<A, B, C> {
 ///     Tuple(#[pin] A, B),
 ///     Struct { field: C },
@@ -400,7 +400,7 @@ pub fn unsafe_project(args: TokenStream, input: TokenStream) -> TokenStream {
 /// use pin_project::{project, unsafe_project};
 /// # use std::pin::Pin;
 ///
-/// #[unsafe_project(Unpin)]
+/// #[unsafe_project]
 /// enum Foo<A, B, C> {
 ///     Tuple(#[pin] A, B),
 ///     Struct { field: C },

@@ -13,7 +13,7 @@ use pin_project::{project, unsafe_project};
 fn test_project_attr() {
     // struct
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     struct Foo<T, U> {
         #[pin]
         field1: T,
@@ -33,7 +33,7 @@ fn test_project_attr() {
 
     // tuple struct
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     struct Bar<T, U>(#[pin] T, U);
 
     let mut bar = Bar(1, 2);
@@ -49,7 +49,7 @@ fn test_project_attr() {
 
     // enum
 
-    #[unsafe_project(Unpin)]
+    #[unsafe_project]
     enum Baz<A, B, C, D> {
         Variant1(#[pin] A, B),
         Variant2 {
