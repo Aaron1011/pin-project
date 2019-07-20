@@ -157,21 +157,20 @@ fn safe_project() {
 
     pin_project! {
         #[unsafe_project]
-        pub struct Foo {
-            field_1: u8,
-            #[pin] field_2: bool
+        pub struct Foo<'a> {
+            was_dropped: &'a mut bool,
+            #[pin] field_2: u8
         }
 
         #[pinned_drop]
         fn do_drop(foo: Pin<&mut Foo>) {
+            **foo.project().was_dropped = true;
         }
     }
 
-    Foo {
-        field_1: 5,
-        field_2: true
-    };
-
+    let mut was_dropped = false;
+    drop(Foo { was_dropped: &mut was_dropped, field_2: 42 });
+    assert!(was_dropped);
 }
 
 #[test]
