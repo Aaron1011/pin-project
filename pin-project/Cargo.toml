@@ -23,4 +23,4 @@ default = ["project_attr"]
 project_attr = ["pin-project-internal/project_attr"]
 
 [dependencies]
-pin-project-internal = { path = "../pin_project_internal" }
+pin-project-internal = { path = "../pin-project-internal" }

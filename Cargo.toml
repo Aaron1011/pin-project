@@ -1,7 +1,7 @@
 [workspace]
 
 members = [
-    "pin_project",
-    "pin_project_internal",
+    "pin-project",
+    "pin-project-internal",
 ]
 
