@@ -8,7 +8,7 @@
 //! use pin_project::pin_projectable;
 //! use std::pin::Pin;
 //!
-//! #[pin_projectable] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
+//! #[pin_projectable]
 //! struct Foo<T, U> {
 //!     #[pin]
 //!     future: T,
@@ -69,7 +69,7 @@
 //! use std::pin::Pin;
 //!
 //! # #[cfg(feature = "project_attr")]
-//! #[pin_projectable] // `(Unpin)` is optional (create the appropriate conditional Unpin implementation)
+//! #[pin_projectable]
 //! enum Foo<T, U> {
 //!     Future(#[pin] T),
 //!     Done(U),
@@ -485,10 +485,10 @@ pub use pin_project_internal::pin_project;
 ///
 /// ## Examples
 ///
-/// An `UnsafeUnpin` impls which, in addition to requiring that structually pinned
-/// fields be `Unpin`, imposes an additional requirement.
+/// An `UnsafeUnpin` impl which, in addition to requiring that structually pinned
+/// fields be `Unpin`, imposes an additional requirement:
 ///
-/// ```ryst
+/// ```rust
 /// use pin_project::{pin_projectable, UnsafeUnpin};
 ///
 /// #[pin_projectable(unsafe_Unpin)]
@@ -503,6 +503,7 @@ pub use pin_project_internal::pin_project;
 #[allow(unsafe_code)]
 pub unsafe trait UnsafeUnpin {}
 
+#[doc(hidden)]
 pub struct Wrapper<T>(T);
 
 #[allow(unsafe_code)]

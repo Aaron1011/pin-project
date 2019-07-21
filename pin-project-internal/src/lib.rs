@@ -29,6 +29,7 @@ pub fn project(args: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 
+/// This is a doc comment from the defining crate!
 #[proc_macro]
 pub fn pin_project(input: TokenStream) -> TokenStream {
 	TokenStream::from(pin_projectable::pin_project(input.into()).unwrap_or_else(|e| e.to_compile_error()))
